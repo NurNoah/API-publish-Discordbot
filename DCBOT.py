@@ -5,7 +5,7 @@ import asyncio
 import requests
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-api_url = "http://localhost:8000/api/zitate"
+api_url = "https://zitateappbackend.onrender.com/api/zitate"
 
 @bot.event
 async def on_ready():
@@ -86,4 +86,4 @@ async def check_for_new_quote():
                     await channel.send(format_data(new_data))
                 data = new_data
 
-bot.run('DCTOKEN')
+bot.run('MTIwNDE1NDc4MTU4NTkwMzYzNg.GG9UZB.g7OS5uumQz-H5JtSqtEP0cp66L7wDjWHa189dk')
