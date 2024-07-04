@@ -19,8 +19,9 @@ async def on_ready():
 @app_commands.describe(name = "Name der Person die das Zitat gesagt hat")
 @app_commands.describe(zitat = "Das gesprochene Zitat")
 async def say(interaction: discord.Interaction, name:str, zitat:str):
-    await interaction.response.send_message(f"Erfolgreich", ephemeral=True)
     await add_new_quote(name, zitat)
+    await interaction.response.send_message(f"Erfolgreich", ephemeral=True)
+    
    
 
 async def add_new_quote(name, quote):
@@ -28,8 +29,8 @@ async def add_new_quote(name, quote):
     try:
         response = requests.post(api_url, json={"name": name, "msg": quote})
         if response.status_code == 200:
-            await print("Zitat erfolgreich hinzugefügt!")
-            data = fetch_data_from_api()  # Aktualisieren der Daten
+            print("Zitat erfolgreich hinzugefügt!")
+            fetch_data_from_api()  # Aktualisieren der Daten
         else:
             print(response.status_code)
     except ValueError:
@@ -41,7 +42,9 @@ async def on_message(msg):
     global data
     if msg.author == bot.user:
         return
-    elif msg.channel.id == 870752551828611102:
+    if msg.channel.id == 938918163448492062:
+        await delete_last_messages(msg.channel)
+    if msg.channel.id == 870752551828611102:
         if msg.content.startswith('/play') or msg.content.startswith('!play') or (
             msg.author.name == 'Chip' and msg.author.discriminator == '4145'):
                 await delete_last_messages(msg.channel)
@@ -86,4 +89,4 @@ async def check_for_new_quote():
                     await channel.send(format_data(new_data))
                 data = new_data
 
-bot.run('MTIwNDE1NDc4MTU4NTkwMzYzNg.GG9UZB.g7OS5uumQz-H5JtSqtEP0cp66L7wDjWHa189dk')
+bot.run('token')
