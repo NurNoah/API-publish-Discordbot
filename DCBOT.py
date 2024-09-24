@@ -5,7 +5,7 @@ import asyncio
 import requests
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-api_url = "https://zitateappbackend.onrender.com/api/zitate"
+api_url = "api"
 
 @bot.event
 async def on_ready():
