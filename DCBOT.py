@@ -7,34 +7,51 @@ import requests
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 api_url = "api"
 
+class ZitatModal(discord.ui.Modal, title='Neues Zitat'):
+    name = discord.ui.TextInput(label='Name', placeholder='Name der Person')
+    zitat = discord.ui.TextInput(label='Zitat', placeholder='Das Zitat', style=discord.TextStyle.paragraph)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await add_new_quote(self.name.value, self.zitat.value)
+        await interaction.response.send_message(f"Zitat hinzugefügt!", ephemeral=True)
+
+class ZitatButton(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None) 
+
+    @discord.ui.button(label="Zitat hinzufügen", style=discord.ButtonStyle.primary)
+    async def button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(ZitatModal())
+
+
 @bot.event
 async def on_ready():
-    global data
+    global data, zitat_message
     await bot.tree.sync()
     data = fetch_data_from_api()
     bot.loop.create_task(check_for_new_quote()) 
     print(f'Logged in as {bot.user.name}')
+    
+    channel = bot.get_channel("channel id")  # Kanal-ID für die Nachricht mit Button
+    if channel:
+        zitat_message = await channel.send("Klicke hier, um ein neues Zitat hinzuzufügen:", view=ZitatButton())
 
 @bot.tree.command(name="zitat", description="Füge ein neues Zitat hinzu")
-@app_commands.describe(name = "Name der Person die das Zitat gesagt hat")
-@app_commands.describe(zitat = "Das gesprochene Zitat")
-async def say(interaction: discord.Interaction, name:str, zitat:str):
-    await add_new_quote(name, zitat)
-    await interaction.response.send_message(f"Erfolgreich", ephemeral=True)
+async def zitat(interaction: discord.Interaction):
+    """Füge ein neues Zitat hinzu"""
+    await interaction.response.send_modal(ZitatModal())
     
-   
-
 async def add_new_quote(name, quote):
     global data
     try:
         response = requests.post(api_url, json={"name": name, "msg": quote})
         if response.status_code == 200:
             print("Zitat erfolgreich hinzugefügt!")
-            fetch_data_from_api()  # Aktualisieren der Daten
+            fetch_data_from_api() 
         else:
             print(response.status_code)
     except ValueError:
-        await print(f"Falsches Format. Verwenden Sie: /zitat [Name] [Zitat]")
+        await print(f"Falsches Format.")
     return response.status_code
 
 @bot.event
@@ -42,12 +59,12 @@ async def on_message(msg):
     global data
     if msg.author == bot.user:
         return
-    if msg.channel.id == 938918163448492062:
+    if msg.channel.id == "channel id":
         await delete_last_messages(msg.channel)
-    if msg.channel.id == 870752551828611102:
+    if msg.channel.id == "channel id":
         if msg.content.startswith('/play') or msg.content.startswith('!play') or (
             msg.author.name == 'Chip' and msg.author.discriminator == '4145'):
-                await delete_last_messages(msg.channel)
+            await delete_last_messages(msg.channel)
 
 async def delete_last_messages(channel):
     async for previous_msg in channel.history(limit=1):
@@ -84,7 +101,7 @@ async def check_for_new_quote():
         if data is not None:
             new_data = fetch_data_from_api()
             if new_data != data:
-                channel = bot.get_channel(938918163448492062) 
+                channel = bot.get_channel("channel id") 
                 if channel:
                     await channel.send(format_data(new_data))
                 data = new_data
